@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"github.com/Opster/opensearch-k8s-operator/opensearch-operator/pkg/reconcilers/util"
 	"sort"
 	"time"
 
@@ -27,25 +28,25 @@ const (
 
 	adminCert = "/certs/tls.crt"
 	adminKey  = "/certs/tls.key"
-	caCert    = "/certs/ca.crt"
+	caCert    = "/trust-bundle-all/ca.crt" ///etc/ssl/cert.pem
 
 	SecurityAdminBaseCmdTmpl = `ADMIN=/usr/share/opensearch/plugins/opensearch-security/tools/securityadmin.sh;
 chmod +x $ADMIN;
 until curl -k --silent https://%s:%v;
 do
-echo 'Waiting to connect to the cluster'; sleep 120;
+echo 'Waiting to connect to the cluster'; sleep 10;
 done;`
 
 	ApplyAllYmlCmdTmpl = `count=0;
 until $ADMIN -cacert %s -cert %s -key %s -cd %s -icl -nhnv -h %s -p %v || (( count++ >= 20 ));
 do
-sleep 20;
+sleep 10;
 done;`
 
 	ApplySingleYmlCmdTmpl = `count=0;
 until $ADMIN -cacert %s -cert %s -key %s -f %s -t %s -icl -nhnv -h %s -p %v || (( count++ >= 20 ));
 do
-sleep 20;
+sleep 10;
 done;`
 )
 
@@ -163,6 +164,19 @@ func (r *SecurityconfigReconciler) Reconcile() (ctrl.Result, error) {
 
 	r.logger.Info("Starting securityconfig update job")
 	r.recorder.AnnotatedEventf(r.instance, annotations, "Normal", "Security", "Starting securityconfig update job")
+
+	// Generate additional volumes
+	addVolumes, addVolumeMounts, _, err := util.CreateAdditionalVolumes(
+		r.client,
+		r.instance.Namespace,
+		r.instance.Spec.General.AdditionalVolumes,
+	)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	r.reconcilerContext.Volumes = append(r.reconcilerContext.Volumes, addVolumes...)
+	r.reconcilerContext.VolumeMounts = append(r.reconcilerContext.VolumeMounts, addVolumeMounts...)
 
 	job = builders.NewSecurityconfigUpdateJob(
 		r.instance,
