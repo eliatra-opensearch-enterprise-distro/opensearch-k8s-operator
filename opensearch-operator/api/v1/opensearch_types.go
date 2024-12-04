@@ -163,11 +163,13 @@ type MonitoringConfigTLS struct {
 }
 
 type BootstrapConfig struct {
-	Resources    corev1.ResourceRequirements `json:"resources,omitempty"`
-	Tolerations  []corev1.Toleration         `json:"tolerations,omitempty"`
-	NodeSelector map[string]string           `json:"nodeSelector,omitempty"`
-	Affinity     *corev1.Affinity            `json:"affinity,omitempty"`
-	Jvm          string                      `json:"jvm,omitempty"`
+	Resources         corev1.ResourceRequirements `json:"resources,omitempty"`
+	Tolerations       []corev1.Toleration         `json:"tolerations,omitempty"`
+	NodeSelector      map[string]string           `json:"nodeSelector,omitempty"`
+	Affinity          *corev1.Affinity            `json:"affinity,omitempty"`
+	Jvm               string                      `json:"jvm,omitempty"`
+	PriorityClassName string                      `json:"priorityClassName,omitempty"`
+	Labels            map[string]string           `json:"labels,omitempty"`
 	// Extra items to add to the opensearch.yml, defaults to General.AdditionalConfig
 	AdditionalConfig map[string]string `json:"additionalConfig,omitempty"`
 }
