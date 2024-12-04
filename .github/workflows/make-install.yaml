@@ -1,5 +1,5 @@
 name: Make install
-on: [pull_request]
+on: [pull_request, push]
 
 jobs:
   make-install:
