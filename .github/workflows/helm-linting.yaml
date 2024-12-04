@@ -1,6 +1,7 @@
 name: Helm Lint
 on:
   push:
+  workflow_dispatch:
   pull_request:
     paths: 
         - 'charts/**'

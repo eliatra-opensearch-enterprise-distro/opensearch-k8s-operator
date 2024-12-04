@@ -1,5 +1,7 @@
 name: Functional tests
-on: [pull_request, push]
+on:
+  push:
+  workflow_dispatch:
 
 jobs:
   operator:
