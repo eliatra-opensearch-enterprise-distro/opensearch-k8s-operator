@@ -71,13 +71,13 @@ var _ = Describe("Builders", func() {
 		})
 		It("should include the init containers as SKIP_INIT_CONTAINER is not set", func() {
 			clusterObject := ClusterDescWithVersion("2.2.1")
-			result := NewBootstrapPod(&clusterObject, nil, nil)
+			result := NewBootstrapPod(&clusterObject, nil, nil, nil)
 			Expect(len(result.Spec.InitContainers)).To(Equal(1))
 		})
 		It("should skip the init container as SKIP_INIT_CONTAINER is set", func() {
 			_ = os.Setenv(helpers.SkipInitContainerEnvVariable, "true")
 			clusterObject := ClusterDescWithVersion("2.2.1")
-			result := NewBootstrapPod(&clusterObject, nil, nil)
+			result := NewBootstrapPod(&clusterObject, nil, nil, nil)
 			Expect(len(result.Spec.InitContainers)).To(Equal(0))
 			_ = os.Unsetenv(helpers.SkipInitContainerEnvVariable)
 		})
@@ -391,7 +391,7 @@ var _ = Describe("Builders", func() {
 			clusterObject := ClusterDescWithVersion("2.2.1")
 			customRepository := "mycustomrepo.cr"
 			clusterObject.Spec.General.DefaultRepo = &customRepository
-			result := NewBootstrapPod(&clusterObject, nil, nil)
+			result := NewBootstrapPod(&clusterObject, nil, nil, nil)
 			Expect(result.Spec.InitContainers[0].Image).To(Equal("mycustomrepo.cr/busybox:latest"))
 		})
 
@@ -402,7 +402,7 @@ var _ = Describe("Builders", func() {
 				mockKey: "/opensearch-operated",
 			}
 			clusterObject := ClusterDescWithAdditionalConfigs(nil, mockConfig)
-			result := NewBootstrapPod(&clusterObject, nil, nil)
+			result := NewBootstrapPod(&clusterObject, nil, nil, nil)
 
 			Expect(result.Spec.Containers[0].Env).To(ContainElement(corev1.EnvVar{
 				Name:  mockKey,
@@ -417,7 +417,7 @@ var _ = Describe("Builders", func() {
 				mockKey: "/opensearch-operated",
 			}
 			clusterObject := ClusterDescWithAdditionalConfigs(mockConfig, nil)
-			result := NewBootstrapPod(&clusterObject, nil, nil)
+			result := NewBootstrapPod(&clusterObject, nil, nil, nil)
 
 			Expect(result.Spec.Containers[0].Env).To(ContainElement(corev1.EnvVar{
 				Name:  mockKey,
@@ -437,7 +437,7 @@ var _ = Describe("Builders", func() {
 			}
 
 			clusterObject := ClusterDescWithAdditionalConfigs(mockGeneralConfig, mockBootstrapConfig)
-			result := NewBootstrapPod(&clusterObject, nil, nil)
+			result := NewBootstrapPod(&clusterObject, nil, nil, nil)
 
 			Expect(result.Spec.Containers[0].Env).NotTo(ContainElement(corev1.EnvVar{
 				Name:  mockKey1,
@@ -797,7 +797,7 @@ var _ = Describe("Builders", func() {
 			for _, container := range nodePoolSts.Spec.Template.Spec.InitContainers {
 				Expect(container.Resources).To(Equal(clusterObject.Spec.InitHelper.Resources))
 			}
-			bootstrapPod := NewBootstrapPod(&clusterObject, nil, nil)
+			bootstrapPod := NewBootstrapPod(&clusterObject, nil, nil, nil)
 			for _, container := range bootstrapPod.Spec.InitContainers {
 				Expect(container.Resources).To(Equal(clusterObject.Spec.InitHelper.Resources))
 			}

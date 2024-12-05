@@ -7,9 +7,41 @@ metadata:
 spec:
   {{- if .Values.opensearchCluster.bootstrap }}
   bootstrap:
+    {{- if .Values.opensearchCluster.bootstrap.labels }}
+    labels: # Add any extra labels as key-value pairs here
+      {{ toYaml .Values.opensearchCluster.bootstrap.labels | nindent 6 }}
+    {{- end }}
+    {{- if .Values.opensearchCluster.bootstrap.priorityClassName }}
+    priorityClassName: {{ .Values.opensearchCluster.bootstrap.priorityClassName }}
+    {{- end }}
     {{- if .Values.opensearchCluster.bootstrap.additionalConfig }}
     additionalConfig:
       {{ toYaml .Values.opensearchCluster.bootstrap.additionalConfig | nindent 6 }}
+    {{- end }}
+    {{- if .Values.opensearchCluster.bootstrap.affinity }}
+    affinity:
+      {{- toYaml .Values.opensearchCluster.bootstrap.affinity | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.opensearchCluster.bootstrap.resources }}
+  resources:
+    {{- if .Values.opensearchCluster.bootstrap.resources.requests }}
+    requests:
+      {{- if .Values.opensearchCluster.bootstrap.resources.requests.memory }}
+      memory: {{ .Values.opensearchCluster.bootstrap.resources.requests.memory }}
+      {{- end }}
+      {{- if .Values.opensearchCluster.bootstrap.resources.requests.cpu }}
+      cpu: {{ .Values.opensearchCluster.bootstrap.resources.requests.cpu }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.opensearchCluster.bootstrap.resources.limits }}
+    limits:
+      {{- if .Values.opensearchCluster.bootstrap.resources.limits.memory }}
+      memory: {{ .Values.opensearchCluster.bootstrap.resources.limits.memory }}
+      {{- end }}
+      {{- if .Values.opensearchCluster.bootstrap.resources.limits.cpu }}
+      cpu: {{ .Values.opensearchCluster.bootstrap.resources.limits.cpu }}
+      {{- end }}
     {{- end }}
   {{- end }}
   {{- if .Values.opensearchCluster.initHelper }}
@@ -82,8 +114,20 @@ spec:
     monitoring:
       {{ toYaml .Values.opensearchCluster.general.monitoring | nindent 6 }}
     {{- end }}
+    {{- if .Values.opensearchCluster.general.snapshotRepositories }}
+    snapshotRepositories:
+      {{- toYaml .Values.opensearchCluster.general.snapshotRepositories | nindent 6 }}
+    {{- end }}
   {{- if .Values.opensearchCluster.dashboards }}
   dashboards:
+    {{- if .Values.opensearchCluster.dashboards.affinity }}
+    affinity:
+      {{- toYaml .Values.opensearchCluster.dashboards.affinity | nindent 6 }}
+    {{- end }}
+    {{- if .Values.opensearchCluster.dashboards.nodeSelector }}
+    nodeSelector:
+      {{- toYaml .Values.opensearchCluster.dashboards.nodeSelector | nindent 6 }}
+    {{- end }}
     {{- if .Values.opensearchCluster.dashboards.image }}
     image: {{ .Values.opensearchCluster.dashboards.image | quote }}
     {{- end }}
@@ -196,6 +240,14 @@ spec:
       {{- if $val.nodeSelector }}
       nodeSelector:
         {{- toYaml $val.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if $val.affinity }}
+      affinity:
+        {{- toYaml $val.affinity | nindent 8 }}
+      {{- end }}
+      {{- if $val.tolerations }}
+      tolerations:
+        {{- toYaml $val.tolerations | nindent 8 }}
       {{- end }}
       {{- if  $val.labels }}
       labels: # Add any extra labels as key-value pairs here
@@ -333,6 +385,8 @@ spec:
         {{- if .Values.opensearchCluster.security.tls.http.secret }}
         secret:
           name: {{ .Values.opensearchCluster.security.tls.http.secret.name }}
+        caSecret:
+          name: {{ .Values.opensearchCluster.security.tls.http.caSecret.name }}
         {{- end }}
       {{- end }}
     {{- end }}

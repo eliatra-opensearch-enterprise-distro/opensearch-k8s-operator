@@ -3,6 +3,7 @@ package builders
 import (
 	"context"
 	"fmt"
+	"github.com/go-logr/logr"
 	"strings"
 
 	monitoring "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -757,12 +758,18 @@ func NewBootstrapPod(
 	cr *opsterv1.OpenSearchCluster,
 	volumes []corev1.Volume,
 	volumeMounts []corev1.VolumeMount,
+	logger *logr.Logger,
+
 ) *corev1.Pod {
 	labels := make(map[string]string)
 	labels[helpers.ClusterLabel] = cr.Name
 	labels["opster.io/bootstrap-node"] = "true"
 
 	resources := cr.Spec.Bootstrap.Resources
+
+	if logger != nil {
+		logger.WithName("bootstrap-logger").Info(fmt.Sprintf("Call NewBootstrapPod with resources: '%v' and prio classname: '%v'", resources, cr.Spec.Bootstrap.PriorityClassName))
+	}
 
 	var jvm string
 	if cr.Spec.Bootstrap.Jvm == "" {
@@ -1029,6 +1036,7 @@ func NewSecurityconfigUpdateJob(
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Name: jobName},
 				Spec: corev1.PodSpec{
+					PriorityClassName:             instance.Spec.Bootstrap.PriorityClassName,
 					TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
 					Containers: []corev1.Container{{
 						Name:            "updater",

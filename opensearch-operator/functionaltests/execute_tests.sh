@@ -1,6 +1,7 @@
 #!/bin/bash
 CLUSTER_NAME=opensearch-operator-tests
 
+k3d cluster delete $CLUSTER_NAME || true
 ## Setup k3d cluster and prepare kubeconfig
 k3d cluster create $CLUSTER_NAME --agents 2 --kubeconfig-switch-context=false --kubeconfig-update-default=false -p "30000-30005:30000-30005@agent:0" --image=rancher/k3s:v1.22.17-k3s1
 k3d kubeconfig get $CLUSTER_NAME > kubeconfig
@@ -14,8 +15,8 @@ make docker-build
 k3d image import -c $CLUSTER_NAME controller:latest
 
 ## Install helm chart
-helm install opensearch-operator ../charts/opensearch-operator --set manager.image.repository=controller --set manager.image.tag=latest --set manager.image.pullPolicy=IfNotPresent --namespace default --wait
-helm install opensearch-cluster ../charts/opensearch-cluster --set OpenSearchClusterSpec.enabled=true --wait
+helm install opensearch-operator ../charts/opensearch-operator --set priorityClassName=high-prio-1000 --set manager.loglevel=debug --set manager.image.repository=controller --set manager.image.tag=latest --set manager.image.pullPolicy=IfNotPresent --namespace default --wait
+helm install opensearch-cluster ../charts/opensearch-cluster --set opensearchCluster.bootstrap.priorityClassName=high-prio-1000 --set opensearchCluster.bootstrap.resources.requests.cpu=500m --set OpenSearchClusterSpec.enabled=true --wait
 
 cd functionaltests
 
